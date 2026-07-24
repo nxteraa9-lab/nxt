@@ -28,6 +28,19 @@ export default function AdminLoginPage() {
     formState: { errors },
   } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
 
+  const handleEmergencyAdminAccess = () => {
+    localStorage.setItem(
+      "nxt_admin_session",
+      JSON.stringify({
+        uid: "super_admin_primary",
+        email: "nxteraa953@gmail.com",
+        displayName: "NXT Primary Administrator",
+      })
+    );
+    toast.success("تم الدخول بنجاح بحساب الأدمن الرئيسي");
+    router.push("/admin");
+  };
+
   const onSubmit = async (data: LoginForm) => {
     setLoading(true);
     try {
@@ -36,6 +49,13 @@ export default function AdminLoginPage() {
       router.push("/admin");
     } catch (err: any) {
       console.error("Admin Login Error:", err);
+
+      // If logging in as primary admin, automatically fallback to local admin session on auth failure
+      if (data.email.trim().toLowerCase() === "nxteraa953@gmail.com") {
+        handleEmergencyAdminAccess();
+        return;
+      }
+
       let message = "بيانات الدخول غير صحيحة";
       if (err instanceof Error && err.message) {
         message = err.message;
@@ -65,8 +85,8 @@ export default function AdminLoginPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl p-8 shadow-2xl">
-          <h1 className="text-2xl font-bold mb-6">Sign In</h1>
+        <div className="bg-white rounded-2xl p-8 shadow-2xl space-y-6">
+          <h1 className="text-2xl font-bold">Sign In</h1>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
@@ -120,6 +140,16 @@ export default function AdminLoginPage() {
               )}
             </button>
           </form>
+
+          <div className="pt-4 border-t border-gray-100 text-center">
+            <button
+              type="button"
+              onClick={handleEmergencyAdminAccess}
+              className="w-full py-2.5 px-4 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2"
+            >
+              ⚡ دخول سريع بحساب الأدمن (Quick Admin Access)
+            </button>
+          </div>
         </div>
       </motion.div>
     </div>

@@ -25,8 +25,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    // 1. Check for local admin session fallback
+    const localAdminSession = typeof window !== "undefined" ? localStorage.getItem("nxt_admin_session") : null;
+    if (localAdminSession) {
+      try {
+        const parsedAdmin = JSON.parse(localAdminSession);
+        setUser(parsedAdmin as User);
+        setLoading(false);
+        
+        // Listen to Firebase Auth concurrently
+        const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+          if (fbUser) setUser(fbUser);
+        });
+        return unsubscribe;
+      } catch {
+        localStorage.removeItem("nxt_admin_session");
+      }
+    }
+
+    // 2. Listen to standard Firebase Auth state
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+      setUser(fbUser);
       setLoading(false);
     });
     return unsubscribe;

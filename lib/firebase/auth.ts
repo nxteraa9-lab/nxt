@@ -68,6 +68,9 @@ export async function signInAdmin(
 }
 
 export async function signOut(): Promise<void> {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("nxt_admin_session");
+  }
   await firebaseSignOut(auth);
 }
 
