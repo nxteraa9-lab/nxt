@@ -55,7 +55,7 @@ export async function signInAdmin(
         return newCredential.user;
       } catch (createErr: any) {
         if (createErr?.code === "auth/email-already-in-use") {
-          throw new Error("كلمة السر التي أدخلتها غير صحيحة لهاتين البيانات.");
+          throw new Error("كلمة المرور غير صحيحة.");
         }
         if (createErr?.code === "auth/operation-not-allowed") {
           throw new Error("طريقة الدخول بـ Email/Password غير مفعّلة في Firebase Console.");
