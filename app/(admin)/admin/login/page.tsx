@@ -34,9 +34,17 @@ export default function AdminLoginPage() {
       await signInAdmin(data.email, data.password);
       toast.success("Welcome back!");
       router.push("/admin");
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Invalid credentials";
+    } catch (err: any) {
+      console.error("Admin Login Error:", err);
+      let message = "Invalid credentials";
+      const code = err?.code;
+      if (code === "auth/unauthorized-domain") {
+        message = "Domain not authorized in Firebase Console (Authorized Domains).";
+      } else if (code === "auth/invalid-credential" || code === "auth/user-not-found" || code === "auth/wrong-password") {
+        message = "Incorrect email or password.";
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
       toast.error(message);
     } finally {
       setLoading(false);
