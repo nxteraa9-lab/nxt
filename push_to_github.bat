@@ -41,7 +41,7 @@ git branch -M main
 :: Remove remote if it exists and add the correct remote
 git remote remove origin >nul 2>&1
 echo [5/5] Linking to GitHub repository...
-git remote add origin https://github.com/nxteraa1231m/nxt.git
+git remote add origin https://github.com/nxteraa9-lab/nxt.git
 
 :: Push
 echo.

@@ -38,7 +38,7 @@ git branch -M main
 # Add remote
 git remote remove origin 2>/dev/null
 echo "[5/5] Linking to GitHub repository..."
-git remote add origin https://github.com/nxteraa1231m/nxt.git
+git remote add origin https://github.com/nxteraa9-lab/nxt.git
 
 # Push
 echo ""
