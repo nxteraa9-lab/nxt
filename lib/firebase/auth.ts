@@ -1,30 +1,70 @@
 import {
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   type User,
 } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "./config";
 
 export async function signInAdmin(
   email: string,
   password: string
 ): Promise<User> {
-  const credential = await signInWithEmailAndPassword(auth, email, password);
-  
-  // Grant instant admin status to the primary administrator email
-  if (credential.user.email === "nxteraa953@gmail.com") {
-    return credential.user;
-  }
+  const cleanEmail = email.trim().toLowerCase();
 
-  // Check if user is in admins collection
-  const adminDoc = await getDoc(doc(db, "admins", credential.user.uid));
-  if (!adminDoc.exists()) {
-    await firebaseSignOut(auth);
-    throw new Error("Access denied. Not an admin account.");
+  try {
+    const credential = await signInWithEmailAndPassword(auth, cleanEmail, password);
+    
+    // Grant instant admin status to the primary administrator email
+    if (credential.user.email?.toLowerCase() === "nxteraa953@gmail.com") {
+      return credential.user;
+    }
+
+    // Check if user is in admins collection
+    const adminDoc = await getDoc(doc(db, "admins", credential.user.uid));
+    if (!adminDoc.exists()) {
+      await firebaseSignOut(auth);
+      throw new Error("Access denied. Not an admin account.");
+    }
+    return credential.user;
+  } catch (error: any) {
+    // If primary admin email and sign in failed because user account doesn't exist yet in Firebase Auth
+    if (
+      cleanEmail === "nxteraa953@gmail.com" &&
+      (error?.code === "auth/invalid-credential" ||
+       error?.code === "auth/user-not-found" ||
+       error?.code === "auth/invalid-email")
+    ) {
+      try {
+        // Automatically create the primary admin account
+        const newCredential = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+        
+        // Save to admins collection in Firestore
+        await setDoc(
+          doc(db, "admins", newCredential.user.uid),
+          {
+            email: cleanEmail,
+            role: "super_admin",
+            createdAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+
+        return newCredential.user;
+      } catch (createErr: any) {
+        if (createErr?.code === "auth/email-already-in-use") {
+          throw new Error("كلمة السر التي أدخلتها غير صحيحة لهاتين البيانات.");
+        }
+        if (createErr?.code === "auth/operation-not-allowed") {
+          throw new Error("طريقة الدخول بـ Email/Password غير مفعّلة في Firebase Console.");
+        }
+        throw createErr;
+      }
+    }
+    throw error;
   }
-  return credential.user;
 }
 
 export async function signOut(): Promise<void> {

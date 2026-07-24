@@ -36,14 +36,13 @@ export default function AdminLoginPage() {
       router.push("/admin");
     } catch (err: any) {
       console.error("Admin Login Error:", err);
-      let message = "Invalid credentials";
-      const code = err?.code;
-      if (code === "auth/unauthorized-domain") {
-        message = "Domain not authorized in Firebase Console (Authorized Domains).";
-      } else if (code === "auth/invalid-credential" || code === "auth/user-not-found" || code === "auth/wrong-password") {
-        message = "Incorrect email or password.";
-      } else if (err instanceof Error) {
+      let message = "بيانات الدخول غير صحيحة";
+      if (err instanceof Error && err.message) {
         message = err.message;
+      } else if (err?.code === "auth/unauthorized-domain") {
+        message = "الدومين غير مصرح له في Firebase Console (Authorized Domains).";
+      } else if (err?.code === "auth/invalid-credential" || err?.code === "auth/user-not-found" || err?.code === "auth/wrong-password") {
+        message = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
       }
       toast.error(message);
     } finally {
