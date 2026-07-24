@@ -27,6 +27,7 @@ export interface Order {
   id: string;
   customerName: string;
   phone: string;
+  customerPhone?: string;
   whatsappPhone?: string;
   governorate?: string;
   city: string;
