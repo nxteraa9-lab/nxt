@@ -25,34 +25,95 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL || "https://nxt-store.vercel.app"
   ),
   title: {
-    default: "NXT",
-    template: "%s | NXT",
+    default: "NXT | البراند المفضل للملابس العصرية",
+    template: "%s | NXT Store",
   },
   description:
-    "Discover premium fashion for modern people. Shop the latest collections at NXT.",
-  keywords: ["fashion", "clothing", "premium", "luxury", "NXT", "menswear", "womenswear"],
+    "تسوق أحدث تشكيلات الملابس والستريت وير العصرية من براند NXT. اكتشف أفضل الهوديز، التيشيرتات، والبنطلونات المصممة بأعلى جودة وخامات ممتازة في مصر والوطن العربي.",
+  keywords: [
+    // 1. اسم البراند وتنويعاته (Brand Name Variations)
+    "NXT",
+    "NXT Store",
+    "NXT Streetwear",
+    "NXT Clothing",
+    "NXT Fashion",
+    "NXT Brand",
+    "براند NXT",
+    "براند نكست",
+    "نكست",
+    "متجر NXT",
+    "براند ملابس NXT",
+
+    // 2. ملابس + اسم البراند (Clothing + Brand)
+    "ملابس NXT",
+    "ملابس نكست",
+    "براند ملابس نكست",
+    "NXT streetwear",
+    "هوديز NXT",
+    "تيشيرتات NXT",
+    "بنطلونات NXT",
+    "سويت شيرت NXT",
+    "NXT t-shirts",
+    "NXT hoodies",
+    "NXT pants",
+    "NXT jackets",
+
+    // 3. كلمات SEO موضة وستريت وير محلية وإقليمية (Local & Category SEO)
+    "NXT Egypt",
+    "NXT مصر",
+    "براندات ستريت وير في مصر",
+    "ملابس ستريت وير مصر",
+    "Streetwear Egypt",
+    "Fashion Brand Egypt",
+    "ملابس شبابي عصرية",
+    "أحدث صيحات الموضة NXT",
+    "تسوق ملابس اونلاين مصر",
+    "أونلاين شوبينج ملابس",
+  ],
+  authors: [{ name: "NXT Brand" }],
+  creator: "NXT",
+  publisher: "NXT Store",
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",
     apple: "/logo.png",
   },
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     locale: "ar_EG",
     url: "/",
-    siteName: "NXT",
-    title: "NXT",
+    siteName: "NXT Store - براند NXT للملابس",
+    title: "NXT | البراند المفضل للملابس والستريت وير العصرية",
     description:
-      "Discover premium fashion for modern people. Shop the latest collections at NXT.",
+      "تسوق أحدث تشكيلات الملابس والستريت وير من براند NXT. خامات ممتازة وتصاميم عصرية تناسب أسلوب حياتك.",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "NXT Clothing Brand",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "NXT",
-    description: "Discover premium fashion for modern people.",
+    title: "NXT | البراند المفضل للملابس والستريت وير العصرية",
+    description: "تسوق أحدث تشكيلات الملابس والستريت وير العصرية من براند NXT.",
+    images: ["/logo.png"],
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
@@ -83,6 +144,20 @@ export default function RootLayout({
                 } catch (e) {}
               })();
             `,
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Brand",
+              "name": "NXT",
+              "alternateName": ["نكست", "NXT Store", "NXT Streetwear", "ملابس NXT", "براند NXT"],
+              "url": process.env.NEXT_PUBLIC_SITE_URL || "https://nxt-store.vercel.app",
+              "logo": "/logo.png",
+              "description": "براند NXT المتخصص في أفضل ملابس الستريت وير والعصرية في مصر والوطن العربي."
+            })
           }}
         />
       </head>
