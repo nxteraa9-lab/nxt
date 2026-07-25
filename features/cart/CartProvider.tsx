@@ -48,22 +48,40 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, items: action.payload };
 
     case "ADD_ITEM": {
+      const payloadProduct = action.payload.product;
+      if (!payloadProduct || !payloadProduct.id) return state;
+
+      const pSize = action.payload.selectedSize || "قياسي";
+      const pColor = action.payload.selectedColor || {
+        name: "افتراضي",
+        hex: "#000000",
+        image: payloadProduct.mainImage || "",
+      };
+
       const existingIndex = state.items.findIndex(
         (item) =>
-          item.product.id === action.payload.product.id &&
-          item.selectedSize === action.payload.selectedSize &&
-          item.selectedColor.hex === action.payload.selectedColor.hex
+          item.product?.id === payloadProduct.id &&
+          (item.selectedSize || "قياسي") === pSize &&
+          (item.selectedColor?.hex || "#000000") === (pColor.hex || "#000000")
       );
 
       if (existingIndex >= 0) {
         const updated = [...state.items];
         updated[existingIndex] = {
           ...updated[existingIndex],
-          quantity: updated[existingIndex].quantity + action.payload.quantity,
+          quantity: (updated[existingIndex].quantity || 1) + (action.payload.quantity || 1),
         };
         return { ...state, items: updated };
       }
-      return { ...state, items: [...state.items, action.payload] };
+
+      const newItem: CartItem = {
+        product: payloadProduct,
+        quantity: action.payload.quantity || 1,
+        selectedSize: pSize,
+        selectedColor: pColor,
+      };
+
+      return { ...state, items: [...state.items, newItem] };
     }
 
     case "REMOVE_ITEM":
@@ -72,9 +90,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         items: state.items.filter(
           (item) =>
             !(
-              item.product.id === action.payload.productId &&
-              item.selectedSize === action.payload.size &&
-              item.selectedColor.hex === action.payload.color
+              item.product?.id === action.payload.productId &&
+              (item.selectedSize || "قياسي") === (action.payload.size || "قياسي") &&
+              (item.selectedColor?.hex || "#000000") === (action.payload.color || "#000000")
             )
         ),
       };
@@ -83,9 +101,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return {
         ...state,
         items: state.items.map((item) =>
-          item.product.id === action.payload.productId &&
-          item.selectedSize === action.payload.size &&
-          item.selectedColor.hex === action.payload.color
+          item.product?.id === action.payload.productId &&
+          (item.selectedSize || "قياسي") === (action.payload.size || "قياسي") &&
+          (item.selectedColor?.hex || "#000000") === (action.payload.color || "#000000")
             ? { ...item, quantity: Math.max(1, action.payload.quantity) }
             : item
         ),
@@ -125,7 +143,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          dispatch({ type: "SET_ITEMS", payload: parsed });
+          // Normalize loaded items to ensure selectedColor and selectedSize are never missing
+          const normalized: CartItem[] = parsed
+            .filter((item: any) => item && item.product && item.product.id)
+            .map((item: any) => ({
+              product: item.product,
+              quantity: item.quantity || 1,
+              selectedSize: item.selectedSize || "قياسي",
+              selectedColor: item.selectedColor || {
+                name: "افتراضي",
+                hex: "#000000",
+                image: item.product.mainImage || "",
+              },
+            }));
+          dispatch({ type: "SET_ITEMS", payload: normalized });
         }
       }
     } catch (e) {
@@ -151,7 +182,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     ) => {
       dispatch({
         type: "ADD_ITEM",
-        payload: { product, quantity, selectedSize: size, selectedColor: color },
+        payload: {
+          product,
+          quantity: quantity || 1,
+          selectedSize: size || "قياسي",
+          selectedColor: color || {
+            name: "افتراضي",
+            hex: "#000000",
+            image: product?.mainImage || "",
+          },
+        },
       });
     },
     []
@@ -176,12 +216,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const openCart = useCallback(() => dispatch({ type: "OPEN_CART" }), []);
   const closeCart = useCallback(() => dispatch({ type: "CLOSE_CART" }), []);
 
-  const totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = state.items.reduce(
-    (sum, item) =>
-      sum + (item.product.salePrice ?? item.product.price) * item.quantity,
-    0
-  );
+  const totalItems = state.items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  const totalPrice = state.items.reduce((sum, item) => {
+    const price = item.product?.salePrice ?? item.product?.price ?? 0;
+    return sum + price * (item.quantity || 1);
+  }, 0);
 
   return (
     <CartContext.Provider

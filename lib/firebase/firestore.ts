@@ -20,6 +20,32 @@ import type { Order, OrderStatus, CreateOrderInput } from "@/types/order";
 import type { Category } from "@/types/category";
 import { deleteFromCloudinary } from "../cloudinary";
 
+// ─── Helpers ──────────────────────────────────────────────
+
+export function cleanUndefined<T>(obj: T): T {
+  if (obj === null || typeof obj !== "object") {
+    return obj;
+  }
+  if (
+    obj instanceof Date ||
+    typeof (obj as any).toMillis === "function" ||
+    typeof (obj as any).isEqual === "function"
+  ) {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(cleanUndefined) as unknown as T;
+  }
+  const cleaned: Record<string, any> = {};
+  for (const key of Object.keys(obj as Record<string, any>)) {
+    const val = (obj as Record<string, any>)[key];
+    if (val !== undefined) {
+      cleaned[key] = cleanUndefined(val);
+    }
+  }
+  return cleaned as T;
+}
+
 // ─── Products ──────────────────────────────────────────
 
 export async function getProducts(filters?: {
@@ -118,10 +144,10 @@ export async function getProductById(id: string): Promise<Product | null> {
 export async function createProduct(
   data: Omit<Product, "id" | "createdAt">
 ): Promise<string> {
-  const docRef = await addDoc(collection(db, "products"), {
+  const docRef = await addDoc(collection(db, "products"), cleanUndefined({
     ...data,
     createdAt: Timestamp.now(),
-  });
+  }));
   return docRef.id;
 }
 
@@ -129,7 +155,7 @@ export async function updateProduct(
   id: string,
   data: Partial<Omit<Product, "id" | "createdAt">>
 ): Promise<void> {
-  await updateDoc(doc(db, "products", id), data);
+  await updateDoc(doc(db, "products", id), cleanUndefined(data));
 }
 
 export async function deleteProduct(id: string): Promise<void> {
@@ -156,12 +182,12 @@ export async function deleteProduct(id: string): Promise<void> {
 // ─── Orders ─────────────────────────────────────────────
 
 export async function createOrder(data: CreateOrderInput): Promise<string> {
-  const docRef = await addDoc(collection(db, "orders"), {
+  const docRef = await addDoc(collection(db, "orders"), cleanUndefined({
     ...data,
     customerPhone: data.phone,
     status: "pending" as OrderStatus,
     createdAt: Timestamp.now(),
-  });
+  }));
   return docRef.id;
 }
 
@@ -203,7 +229,7 @@ export async function getCategories(): Promise<Category[]> {
 export async function createCategory(
   data: Omit<Category, "id">
 ): Promise<string> {
-  const docRef = await addDoc(collection(db, "categories"), data);
+  const docRef = await addDoc(collection(db, "categories"), cleanUndefined(data));
   return docRef.id;
 }
 
@@ -268,7 +294,7 @@ export async function updateSiteSettings(
   data: Partial<SiteSettings>
 ): Promise<void> {
   const docRef = doc(db, "site_settings", "general");
-  await setDoc(docRef, data, { merge: true });
+  await setDoc(docRef, cleanUndefined(data), { merge: true });
 }
 
 // ─── Shipping Rates (Governorates) ──────────────────────
@@ -293,7 +319,7 @@ export async function getShippingRates(): Promise<GovernorateRate[]> {
 
 export async function updateShippingRates(rates: GovernorateRate[]): Promise<void> {
   const docRef = doc(db, "site_settings", "shipping");
-  await setDoc(docRef, { rates, updatedAt: Timestamp.now() }, { merge: true });
+  await setDoc(docRef, cleanUndefined({ rates, updatedAt: Timestamp.now() }), { merge: true });
 }
 
 // ─── Contact Messages & Complaints ──────────────────────
@@ -312,11 +338,11 @@ export async function createContactMessage(data: {
   email: string;
   message: string;
 }): Promise<string> {
-  const docRef = await addDoc(collection(db, "contact_messages"), {
+  const docRef = await addDoc(collection(db, "contact_messages"), cleanUndefined({
     ...data,
     status: "unread",
     createdAt: Timestamp.now(),
-  });
+  }));
   return docRef.id;
 }
 
@@ -363,7 +389,7 @@ export async function createSystemErrorLog(data: {
   context?: string;
 }): Promise<string> {
   try {
-    const docRef = await addDoc(collection(db, "system_errors"), {
+    const docRef = await addDoc(collection(db, "system_errors"), cleanUndefined({
       message: data.message || "Unknown Runtime Error",
       stack: data.stack || "",
       url: data.url || (typeof window !== "undefined" ? window.location.href : ""),
@@ -371,7 +397,7 @@ export async function createSystemErrorLog(data: {
       context: data.context || "Client Runtime",
       resolved: false,
       createdAt: Timestamp.now(),
-    });
+    }));
     return docRef.id;
   } catch (err) {
     console.error("Failed to log system error to Firestore:", err);

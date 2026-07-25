@@ -209,22 +209,30 @@ export default function CheckoutPage() {
         selectedColor: item.selectedColor,
       }));
 
-      const orderId = await createOrder({
-        customerName: data.customerName,
-        phone: data.phone,
-        whatsappPhone: data.whatsappPhone || data.phone,
-        governorate: data.governorate,
-        city: data.city,
-        address: data.address,
-        notes: data.notes,
+      const orderPayload: CreateOrderInput = {
+        customerName: data.customerName.trim(),
+        phone: data.phone.trim(),
+        whatsappPhone: data.whatsappPhone?.trim() || data.phone.trim(),
+        governorate: data.governorate.trim(),
+        city: data.city.trim(),
+        address: data.address.trim(),
+        notes: data.notes?.trim() || "",
         paymentMethod: data.paymentMethod as PaymentMethod,
-        transferPhone: data.transferPhone || undefined,
-        transferScreenshot: screenshotUrl || undefined,
         items: orderItems,
         subtotal: totalPrice,
         shippingCost: currentShippingCost,
         total: finalOrderTotal,
-      });
+      };
+
+      if (data.transferPhone?.trim()) {
+        orderPayload.transferPhone = data.transferPhone.trim();
+      }
+
+      if (screenshotUrl) {
+        orderPayload.transferScreenshot = screenshotUrl;
+      }
+
+      const orderId = await createOrder(orderPayload);
 
       setOrderSuccess(true);
       clearCart();
@@ -537,27 +545,35 @@ export default function CheckoutPage() {
 
                 {/* Items */}
                 <div className="space-y-3 max-h-72 overflow-y-auto pl-1">
-                  {items.map((item) => {
-                    const key = `${item.product.id}-${item.selectedSize}-${item.selectedColor.hex}`;
-                    const price = item.product.salePrice ?? item.product.price;
+                  {items.map((item, idx) => {
+                    const pId = item.product?.id || `item-${idx}`;
+                    const pSize = item.selectedSize || "قياسي";
+                    const pColorHex = item.selectedColor?.hex || "#000000";
+                    const pColorName = item.selectedColor?.name || "افتراضي";
+                    const pImage = item.selectedColor?.image || item.product?.mainImage || "/placeholder.jpg";
+                    const pName = item.product?.name || "منتج NXT";
+                    const price = item.product?.salePrice ?? item.product?.price ?? 0;
+                    const qty = item.quantity || 1;
+                    const key = `${pId}-${pSize}-${pColorHex}`;
+
                     return (
                       <div key={key} className="flex items-center gap-3 p-2 bg-white dark:bg-zinc-800 rounded-xl border border-gray-100 dark:border-zinc-700">
                         <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-50 dark:bg-zinc-700 flex-shrink-0">
                           <Image
-                            src={item.selectedColor.image || item.product.mainImage || "/placeholder.jpg"}
-                            alt={item.product.name}
+                            src={pImage}
+                            alt={pName}
                             width={48}
                             height={48}
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold truncate">{item.product.name}</p>
+                          <p className="text-xs font-bold truncate">{pName}</p>
                           <p className="text-[10px] text-gray-500">
-                            {item.selectedColor.name} / {item.selectedSize} × {item.quantity}
+                            {pColorName} / {pSize} × {qty}
                           </p>
                         </div>
-                        <span className="text-xs font-black">{formatPrice(price * item.quantity)}</span>
+                        <span className="text-xs font-black">{formatPrice(price * qty)}</span>
                       </div>
                     );
                   })}

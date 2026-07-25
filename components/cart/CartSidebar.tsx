@@ -72,33 +72,40 @@ export function CartSidebar() {
                   </button>
                 </div>
               ) : (
-                items.map((item) => {
-                  const key = `${item.product.id}-${item.selectedSize}-${item.selectedColor.hex}`;
-                  const price = item.product.salePrice ?? item.product.price;
+                items.map((item, index) => {
+                  const pId = item.product?.id || `item-${index}`;
+                  const pSize = item.selectedSize || "قياسي";
+                  const pColorHex = item.selectedColor?.hex || "#000000";
+                  const pColorName = item.selectedColor?.name || "افتراضي";
+                  const pImage = item.selectedColor?.image || item.product?.mainImage || "/placeholder.jpg";
+                  const pName = item.product?.name || "منتج NXT";
+                  const price = item.product?.salePrice ?? item.product?.price ?? 0;
+                  const key = `${pId}-${pSize}-${pColorHex}`;
+
                   return (
                     <motion.div key={key} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200/60 dark:border-zinc-800">
                       <div className="w-14 h-14 rounded-lg overflow-hidden bg-white dark:bg-zinc-900 flex-shrink-0 p-1 border border-zinc-200/60 dark:border-zinc-800">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={item.selectedColor.image || item.product.mainImage || "/placeholder.jpg"} alt={item.product.name} className="w-full h-full object-contain" />
+                        <img src={pImage} alt={pName} className="w-full h-full object-contain" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1">
-                          <h4 className="font-bold text-xs truncate">{item.product.name}</h4>
-                          <button type="button" onClick={() => removeItem(item.product.id, item.selectedSize, item.selectedColor.hex)} className="text-zinc-400 hover:text-red-500 transition-colors p-0.5 cursor-pointer flex-shrink-0"><Trash2 size={14} /></button>
+                          <h4 className="font-bold text-xs truncate">{pName}</h4>
+                          <button type="button" onClick={() => removeItem(pId, pSize, pColorHex)} className="text-zinc-400 hover:text-red-500 transition-colors p-0.5 cursor-pointer flex-shrink-0"><Trash2 size={14} /></button>
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
                           <div className="flex items-center gap-1">
-                            <span className="w-2.5 h-2.5 rounded-full border border-zinc-300 dark:border-zinc-700" style={{ backgroundColor: item.selectedColor.hex }} />
-                            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">{item.selectedColor.name}</span>
+                            <span className="w-2.5 h-2.5 rounded-full border border-zinc-300 dark:border-zinc-700" style={{ backgroundColor: pColorHex }} />
+                            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">{pColorName}</span>
                           </div>
-                          <span className="text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 rounded">{item.selectedSize}</span>
+                          <span className="text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 rounded">{pSize}</span>
                         </div>
                         <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs font-black">{formatPrice(price * item.quantity)}</span>
+                          <span className="text-xs font-black">{formatPrice(price * (item.quantity || 1))}</span>
                           <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 px-1.5 py-0.5 shadow-sm">
-                            <button type="button" onClick={() => updateQuantity(item.product.id, item.selectedSize, item.selectedColor.hex, item.quantity - 1)} className="w-4 h-4 flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded cursor-pointer"><Minus size={10} /></button>
-                            <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
-                            <button type="button" onClick={() => updateQuantity(item.product.id, item.selectedSize, item.selectedColor.hex, item.quantity + 1)} className="w-4 h-4 flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded cursor-pointer"><Plus size={10} /></button>
+                            <button type="button" onClick={() => updateQuantity(pId, pSize, pColorHex, (item.quantity || 1) - 1)} className="w-4 h-4 flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded cursor-pointer"><Minus size={10} /></button>
+                            <span className="text-xs font-bold w-4 text-center">{item.quantity || 1}</span>
+                            <button type="button" onClick={() => updateQuantity(pId, pSize, pColorHex, (item.quantity || 1) + 1)} className="w-4 h-4 flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded cursor-pointer"><Plus size={10} /></button>
                           </div>
                         </div>
                       </div>

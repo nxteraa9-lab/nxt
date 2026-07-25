@@ -37,16 +37,26 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
       .then((data) => {
         if (data) {
           setProduct(data);
-          if (data?.variants && data.variants[0]) {
+          if (data?.variants && data.variants.length > 0 && data.variants[0]) {
             const firstVariant = data.variants[0];
             setSelectedColor({
-              name: firstVariant.colorName,
-              hex: firstVariant.colorHex,
-              image: firstVariant.image,
+              name: firstVariant.colorName || "افتراضي",
+              hex: firstVariant.colorHex || "#000000",
+              image: firstVariant.image || data.mainImage || "",
             });
-            // Auto select first available size for seamless mobile UX
-            const firstInStock = firstVariant.sizes?.find((s) => s.stock > 0)?.size || firstVariant.sizes[0]?.size || "";
+            const firstInStock =
+              firstVariant.sizes?.find((s) => s.stock > 0)?.size ||
+              firstVariant.sizes?.[0]?.size ||
+              "قياسي";
             setSelectedSize(firstInStock);
+          } else {
+            // Default fallback for products without variants (e.g. phone models / covers)
+            setSelectedColor({
+              name: "افتراضي",
+              hex: "#000000",
+              image: data.mainImage || "",
+            });
+            setSelectedSize("قياسي");
           }
         }
       })
@@ -83,44 +93,56 @@ export default function ProductDetailClient({ overrideSlug }: { overrideSlug?: s
     ? getDiscountPercentage(product.price, product.salePrice!)
     : 0;
 
-  const activeVariant = product.variants.find((v) => v.colorHex === selectedColor?.hex) || product.variants[0];
+  const hasVariants = Boolean(product.variants && product.variants.length > 0);
+  const activeVariant = hasVariants
+    ? product.variants.find((v) => v.colorHex === selectedColor?.hex) || product.variants[0]
+    : null;
   
-  const galleryImages = [
-    activeVariant?.image,
-    product.mainImage,
-    ...product.variants.filter((v) => v.colorHex !== activeVariant?.colorHex).map((v) => v.image),
-  ].filter(Boolean) as string[];
+  const galleryImages = Array.from(
+    new Set(
+      [
+        activeVariant?.image,
+        product.mainImage,
+        ...(product.variants?.map((v) => v.image) || []),
+      ].filter(Boolean) as string[]
+    )
+  );
+  if (galleryImages.length === 0) {
+    galleryImages.push("/placeholder.jpg");
+  }
 
   const availableSizes = activeVariant?.sizes || [];
-  const sizeStock = activeVariant?.sizes.find((s) => s.size === selectedSize)?.stock || 0;
+  const sizeStock = hasVariants
+    ? activeVariant?.sizes?.find((s) => s.size === selectedSize)?.stock ?? 99
+    : 99;
 
   const handleColorSelect = (variant: ProductVariant) => {
     setSelectedColor({
-      name: variant.colorName,
-      hex: variant.colorHex,
-      image: variant.image,
+      name: variant.colorName || "افتراضي",
+      hex: variant.colorHex || "#000000",
+      image: variant.image || product.mainImage || "",
     });
-    const firstInStock = variant.sizes?.find((s) => s.stock > 0)?.size || variant.sizes[0]?.size || "";
+    const firstInStock =
+      variant.sizes?.find((s) => s.stock > 0)?.size || variant.sizes?.[0]?.size || "قياسي";
     setSelectedSize(firstInStock);
     setActiveImage(0);
     setQuantity(1);
   };
 
   const handleAddToCart = async () => {
-    if (!selectedSize) {
-      toast.error("Please select a size / يرجى اختيار المقاس");
-      return;
-    }
-    if (!selectedColor) {
-      toast.error("Please select a color / يرجى اختيار اللون");
-      return;
-    }
+    const finalSize = selectedSize || "قياسي";
+    const finalColor = selectedColor || {
+      name: "افتراضي",
+      hex: "#000000",
+      image: product.mainImage || "",
+    };
+
     if (sizeStock === 0) {
-      toast.error("This size is out of stock / المقاس غير متوفر حالياً");
+      toast.error("هذا المقاس غير متوفر حالياً");
       return;
     }
     setAdding(true);
-    addItem(product, quantity, selectedSize, selectedColor);
+    addItem(product, quantity, finalSize, finalColor);
     await new Promise((r) => setTimeout(r, 400));
     setAdding(false);
     toast.success(`تمت إضافة ${product.name} إلى السلة بنجاح!`);

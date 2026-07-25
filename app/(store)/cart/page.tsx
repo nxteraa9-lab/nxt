@@ -55,9 +55,17 @@ export default function CartPage() {
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
               <AnimatePresence initial={false}>
-                {items.map((item) => {
-                  const key = `${item.product.id}-${item.selectedSize}-${item.selectedColor.hex}`;
-                  const price = item.product.salePrice ?? item.product.price;
+                {items.map((item, index) => {
+                  const pId = item.product?.id || `item-${index}`;
+                  const pSize = item.selectedSize || "قياسي";
+                  const pColorHex = item.selectedColor?.hex || "#000000";
+                  const pColorName = item.selectedColor?.name || "افتراضي";
+                  const pImage = item.selectedColor?.image || item.product?.mainImage || "/placeholder.jpg";
+                  const pName = item.product?.name || "منتج NXT";
+                  const pBrand = item.product?.brand || "NXT";
+                  const price = item.product?.salePrice ?? item.product?.price ?? 0;
+                  const qty = item.quantity || 1;
+                  const key = `${pId}-${pSize}-${pColorHex}`;
 
                   return (
                     <motion.div
@@ -71,8 +79,8 @@ export default function CartPage() {
                       {/* Image */}
                       <div className="w-24 h-24 md:w-32 md:h-32 rounded-xl overflow-hidden bg-white flex-shrink-0">
                         <Image
-                          src={item.selectedColor.image || item.product.mainImage || "/placeholder.jpg"}
-                          alt={item.product.name}
+                          src={pImage}
+                          alt={pName}
                           width={128}
                           height={128}
                           className="w-full h-full object-contain p-2"
@@ -82,19 +90,19 @@ export default function CartPage() {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-400 mb-0.5">
-                          {item.product.brand}
+                          {pBrand}
                         </p>
-                        <h3 className="font-semibold truncate">{item.product.name}</h3>
+                        <h3 className="font-semibold truncate">{pName}</h3>
                         <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
                           <div className="flex items-center gap-1.5">
                             <div
                               className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: item.selectedColor.hex }}
+                              style={{ backgroundColor: pColorHex }}
                             />
-                            {item.selectedColor.name}
+                            {pColorName}
                           </div>
                           <span>/</span>
-                          <span>Size {item.selectedSize}</span>
+                          <span>Size {pSize}</span>
                         </div>
 
                         <div className="flex items-center justify-between mt-4">
@@ -102,13 +110,8 @@ export default function CartPage() {
                           <div className="flex items-center border border-gray-200 bg-white rounded-xl overflow-hidden">
                             <button
                               onClick={() => {
-                                if (item.quantity > 1) {
-                                  updateQuantity(
-                                    item.product.id,
-                                    item.selectedSize,
-                                    item.selectedColor.hex,
-                                    item.quantity - 1
-                                  );
+                                if (qty > 1) {
+                                  updateQuantity(pId, pSize, pColorHex, qty - 1);
                                 }
                               }}
                               className="w-9 h-9 flex items-center justify-center hover:bg-gray-50 transition-colors"
@@ -116,17 +119,10 @@ export default function CartPage() {
                               <Minus size={12} />
                             </button>
                             <span className="w-8 text-center text-sm font-semibold">
-                              {item.quantity}
+                              {qty}
                             </span>
                             <button
-                              onClick={() =>
-                                updateQuantity(
-                                  item.product.id,
-                                  item.selectedSize,
-                                  item.selectedColor.hex,
-                                  item.quantity + 1
-                                )
-                              }
+                              onClick={() => updateQuantity(pId, pSize, pColorHex, qty + 1)}
                               className="w-9 h-9 flex items-center justify-center hover:bg-gray-50 transition-colors"
                             >
                               <Plus size={12} />
@@ -135,16 +131,10 @@ export default function CartPage() {
 
                           <div className="flex items-center gap-4">
                             <span className="font-bold">
-                              {formatPrice(price * item.quantity)}
+                              {formatPrice(price * qty)}
                             </span>
                             <button
-                              onClick={() =>
-                                removeItem(
-                                  item.product.id,
-                                  item.selectedSize,
-                                  item.selectedColor.hex
-                                )
-                              }
+                              onClick={() => removeItem(pId, pSize, pColorHex)}
                               className="text-gray-300 hover:text-red-500 transition-colors"
                             >
                               <Trash2 size={16} />

@@ -472,7 +472,7 @@ export default function AdminOrdersPage() {
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-xs text-zinc-950 truncate">{item.productName}</p>
                           <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider mt-0.5">
-                            اللون: {item.selectedColor.name} | المقاس: {item.selectedSize} | الكمية: {item.quantity}
+                            اللون: {item.selectedColor?.name || "افتراضي"} | المقاس: {item.selectedSize || "قياسي"} | الكمية: {item.quantity || 1}
                           </p>
                         </div>
                         <p className="font-black text-xs text-zinc-950">
