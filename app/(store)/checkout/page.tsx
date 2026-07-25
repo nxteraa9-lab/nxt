@@ -24,7 +24,7 @@ import { formatPrice } from "@/lib/utils";
 import { checkoutSchema, type CheckoutFormData } from "@/lib/validations/checkout.schema";
 import { Input } from "@/components/ui/Input";
 import { Spinner } from "@/components/ui/Spinner";
-import type { PaymentMethod, OrderItem } from "@/types/order";
+import type { PaymentMethod, OrderItem, CreateOrderInput } from "@/types/order";
 import { TruckSubmitButton } from "@/components/checkout/TruckSubmitButton";
 import type { GovernorateRate } from "@/constants/governorates";
 
