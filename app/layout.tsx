@@ -121,8 +121,6 @@ export const metadata: Metadata = {
   },
 };
 
-import { ErrorTrackerProvider } from "@/components/ui/ErrorTrackerProvider";
-
 export default function RootLayout({
   children,
 }: Readonly<{
