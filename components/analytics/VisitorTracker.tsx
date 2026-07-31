@@ -20,17 +20,32 @@ function getOrGenerateId(key: string, prefix: string, storage: Storage): string 
 
 function detectDevice(): "Mobile" | "Desktop" | "Tablet" {
   if (typeof window === "undefined" || !navigator) return "Desktop";
-  const ua = navigator.userAgent;
+  const ua = navigator.userAgent || "";
+  const isTouch = typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0);
+  const width = typeof window !== "undefined" ? (window.innerWidth || document.documentElement.clientWidth || 0) : 0;
+
+  // 1. Tablet check
   if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
     return "Tablet";
   }
+
+  // 2. Mobile User Agent regex
   if (
-    /Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(
+    /Mobile|iPhone|iPod|Android|BlackBerry|IEMobile|Kindle|Silk|Opera Mini|MobileSafari|CriOS|FxiOS|webOS/i.test(
       ua
     )
   ) {
     return "Mobile";
   }
+
+  // 3. Fallback for mobile phones with Desktop Mode enabled (Screen width <= 768 or touch)
+  if (isTouch && width > 0 && width <= 768) {
+    return "Mobile";
+  }
+  if (isTouch && width > 768 && width <= 1024) {
+    return "Tablet";
+  }
+
   return "Desktop";
 }
 
