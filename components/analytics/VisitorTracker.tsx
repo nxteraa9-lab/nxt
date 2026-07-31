@@ -95,7 +95,6 @@ export function VisitorTracker() {
   useEffect(() => {
     // Avoid tracking inside admin panel pages
     if (pathname && pathname.startsWith("/admin")) return;
-
     if (typeof window === "undefined") return;
 
     const visitorId = getOrGenerateId("nxt_visitor_id", "v", localStorage);
@@ -106,29 +105,46 @@ export function VisitorTracker() {
     const isNewPage = lastPathRef.current !== pathname;
     lastPathRef.current = pathname;
 
+    const sendPing = (isNew: boolean = false) => {
+      try {
+        trackVisitorSession({
+          sessionId,
+          visitorId,
+          currentPage: window.location.pathname || "/",
+          device,
+          browser,
+          isNewPageView: isNew,
+        });
+      } catch (err) {
+        console.error("Visitor tracking error:", err);
+      }
+    };
+
     // Track immediately on mount / route change
-    trackVisitorSession({
-      sessionId,
-      visitorId,
-      currentPage: pathname || "/",
-      device,
-      browser,
-      isNewPageView: isNewPage,
-    });
+    sendPing(isNewPage);
 
-    // Send periodic heartbeat every 30s to keep session alive as "Active Now"
+    // Track on visibility change (crucial for Mobile phones when user opens/resumes tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        sendPing(false);
+      }
+    };
+
+    window.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleVisibilityChange);
+
+    // Send periodic heartbeat every 20s to keep session active
     const interval = setInterval(() => {
-      trackVisitorSession({
-        sessionId,
-        visitorId,
-        currentPage: window.location.pathname || "/",
-        device,
-        browser,
-        isNewPageView: false,
-      });
-    }, 30000);
+      if (document.visibilityState === "visible") {
+        sendPing(false);
+      }
+    }, 20000);
 
-    return () => clearInterval(interval);
+    return () => {
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleVisibilityChange);
+      clearInterval(interval);
+    };
   }, [pathname]);
 
   return null;
