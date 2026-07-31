@@ -24,12 +24,11 @@ export default function IntroLabPage() {
         className="text-center space-y-6 max-w-sm border border-zinc-800 bg-zinc-950 p-8 rounded-3xl shadow-2xl"
       >
         <div className="flex flex-col items-center justify-center gap-2 mb-2">
-          <span className="text-4xl font-black tracking-[0.2em] text-white">NXT ERA</span>
-          <span className="text-xs font-bold tracking-[0.4em] text-zinc-400 uppercase">THE FUTURE OF FASHION</span>
+          <span className="text-5xl font-black tracking-[0.25em] text-white">NXT</span>
         </div>
 
         <p className="text-zinc-400 text-xs leading-relaxed">
-          معاينة انترو NXT الفاخر البسيط (نص NXT ERA باللون الأبيض، خلفية سوداء، حركة من اليمين إلى اليسار).
+          معاينة انترو كلمة NXT فقط باللون الأبيض الفاخر، مع لمعة ضوئية تحرك من اليمين إلى اليسار وخلفية سوداء.
         </p>
 
         <button
@@ -37,7 +36,7 @@ export default function IntroLabPage() {
           className="inline-flex items-center justify-center gap-2 bg-white text-black font-extrabold text-sm px-8 py-3.5 rounded-2xl hover:bg-zinc-200 transition-all active:scale-95 cursor-pointer w-full"
         >
           <Play size={16} fill="black" />
-          معاينة انترو NXT ERA الآن
+          معاينة انترو NXT الآن
         </button>
 
         <div className="flex items-center justify-center pt-2 border-t border-zinc-800">
