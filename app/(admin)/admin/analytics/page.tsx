@@ -23,21 +23,25 @@ import {
   type VisitorSession,
 } from "@/lib/firebase/firestore";
 import { Spinner } from "@/components/ui/Spinner";
+import { useAuth } from "@/features/auth/AuthProvider";
 
 export default function AdminAnalyticsPage() {
+  const { user, loading: authLoading } = useAuth();
   const [data, setData] = useState<VisitorAnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | "live" | "inactive">("all");
 
   useEffect(() => {
+    if (authLoading || !user) return;
+
     const unsubscribe = subscribeToVisitorSessions((summary) => {
       setData(summary);
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user, authLoading]);
 
   const formatRelativeTime = (timestamp: any): { label: string; isLive: boolean } => {
     if (!timestamp) return { label: "غير معروف", isLive: false };
