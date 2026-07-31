@@ -6,7 +6,7 @@ import { CartProvider } from "@/features/cart/CartProvider";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { ThemeProvider } from "@/features/theme/ThemeProvider";
 import { WishlistProvider } from "@/features/wishlist/WishlistProvider";
-import { ErrorTrackerProvider } from "@/components/admin/ErrorTrackerProvider";
+import { ErrorTrackerProvider } from "@/components/ui/ErrorTrackerProvider";
 import { Toaster } from "sonner";
 
 const gaId = process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-H2HP3BGKNW";
