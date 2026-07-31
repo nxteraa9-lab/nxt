@@ -25,6 +25,7 @@ export const productSchema = z.object({
   category: z.string().min(1, "اختر الفئة"),
   brand: z.string().min(1, "البراند مطلوب"),
   mainImage: z.string().url("صورة الغلاف الرئيسية مطلوبة"),
+  hoverImage: z.string().url("رابط الصورة غير صحيح").or(z.literal("")).optional(),
   variants: z.array(productVariantSchema).min(1, "أضف لون واحد على الأقل"),
   featured: z.boolean().default(false),
   bestSeller: z.boolean().default(false),

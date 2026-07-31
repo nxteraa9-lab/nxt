@@ -88,11 +88,9 @@ service cloud.firestore {
 
     // ─── 8. جلسات تحليلات الزوار (Visitor Analytics Sessions) ────────
     match /visitor_sessions/{sessionId} {
-      // السماح لأي زائر بإنشاء وتحديث حالة تواجده
-      allow create, update: if true;
-
-      // قراءة وإلغاء الجلسات محصورة بالأدمن فقط
-      allow read, delete: if isAdmin();
+      // السماح لجميع القراءات بإنشاء وتحديث حالة التواجد وقراءتها
+      allow read, create, update: if true;
+      allow delete: if isAdmin();
     }
 
     // ─── الحماية الافتراضية لأي مجموعة أخرى غير معروفة ───────────────

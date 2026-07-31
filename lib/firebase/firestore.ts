@@ -511,7 +511,8 @@ export async function trackVisitorSession(data: {
 export function subscribeToVisitorSessions(
   callback: (summary: VisitorAnalyticsSummary) => void
 ): () => void {
-  const q = query(collection(db, "visitor_sessions"), orderBy("lastActive", "desc"), limit(200));
+  // Query without Firestore orderBy to avoid missing field drop or index constraints
+  const q = query(collection(db, "visitor_sessions"), limit(200));
 
   return onSnapshot(
     q,
@@ -519,6 +520,14 @@ export function subscribeToVisitorSessions(
       const nowMs = Date.now();
       const liveWindowMs = 5 * 60 * 1000; // 5 minutes active window
       const todayStr = new Date().toISOString().slice(0, 10);
+
+      const getMs = (t: any): number => {
+        if (!t) return 0;
+        if (t?.toMillis) return t.toMillis();
+        if (t?.seconds) return t.seconds * 1000;
+        if (t instanceof Date) return t.getTime();
+        return 0;
+      };
 
       const sessions: VisitorSession[] = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
@@ -535,6 +544,9 @@ export function subscribeToVisitorSessions(
           pageViews: data.pageViews || 1,
         };
       });
+
+      // Sort in JS memory by lastActive descending
+      sessions.sort((a, b) => getMs(b.lastActive) - getMs(a.lastActive));
 
       let liveCount = 0;
       let todayCount = 0;
@@ -553,15 +565,7 @@ export function subscribeToVisitorSessions(
       }
 
       sessions.forEach((s) => {
-        // Calculate last active timestamp ms
-        let lastActiveMs = 0;
-        if (s.lastActive?.toMillis) {
-          lastActiveMs = s.lastActive.toMillis();
-        } else if (s.lastActive?.seconds) {
-          lastActiveMs = s.lastActive.seconds * 1000;
-        } else if (s.lastActive instanceof Date) {
-          lastActiveMs = s.lastActive.getTime();
-        }
+        const lastActiveMs = getMs(s.lastActive);
 
         // Live status check (within last 5 mins)
         if (nowMs - lastActiveMs <= liveWindowMs && lastActiveMs > 0) {
@@ -626,6 +630,18 @@ export function subscribeToVisitorSessions(
     },
     (err) => {
       console.error("Error subscribing to visitor sessions:", err);
+      // Invoke callback with safe default fallback so page stops loading state
+      callback({
+        liveCount: 0,
+        todayCount: 0,
+        totalVisitors: 0,
+        totalPageViews: 0,
+        sessions: [],
+        deviceBreakdown: { mobile: 0, desktop: 0, tablet: 0 },
+        browserBreakdown: {},
+        topPages: [],
+        dailyTrend: [],
+      });
     }
   );
 }

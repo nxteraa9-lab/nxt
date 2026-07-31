@@ -11,6 +11,8 @@ export interface Product {
   category: string;
   brand: string;
   mainImage: string;
+  hoverImage?: string; // صورة الهوفر الثانية المعروضة عند تمرير الماوس
+  images?: string[];   // معرض الصور الإضافية
   variants: ProductVariant[];
   featured: boolean;
   bestSeller: boolean;

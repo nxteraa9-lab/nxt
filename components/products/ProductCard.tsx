@@ -25,6 +25,14 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
   const staggerDelay = (index % 4) * 0.08;
 
+  // Find second image for hover effect (explicit hoverImage, images array, or variant image)
+  const secondImage =
+    product.hoverImage ||
+    (product.images && product.images.length > 1 ? product.images[1] : null) ||
+    product.variants?.find((v) => v.image && v.image !== product.mainImage)?.image ||
+    (product.variants && product.variants.length > 1 ? product.variants[1]?.image : null) ||
+    null;
+
   // Navigate by Firestore Document ID (always unique — never use slug)
   const navigateToProduct = () => {
     router.push(`/products?id=${encodeURIComponent(product.id)}`);
@@ -87,14 +95,15 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             </motion.span>
           </div>
 
-          {/* Product Image */}
-          <div className="aspect-[3/4] relative overflow-hidden">
+          {/* Product Image Container */}
+          <div className="aspect-[3/4] relative overflow-hidden rounded-2xl">
             {product.mainImage ? (
               <motion.div
-                className="w-full h-full"
+                className="w-full h-full relative"
                 whileHover={{ scale: 1.04 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               >
+                {/* Main Primary Image */}
                 <Image
                   src={product.mainImage}
                   alt={product.name}
@@ -103,8 +112,23 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                   quality={95}
                   crossOrigin="anonymous"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-contain object-top transition-transform duration-500"
+                  className={`object-contain object-top transition-all duration-500 ease-in-out ${
+                    secondImage ? "group-hover:opacity-0" : ""
+                  }`}
                 />
+
+                {/* Second Hover Image (if available) */}
+                {secondImage && (
+                  <Image
+                    src={secondImage}
+                    alt={`${product.name} hover view`}
+                    fill
+                    quality={95}
+                    crossOrigin="anonymous"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-contain object-top opacity-0 group-hover:opacity-100 transition-all duration-500 ease-in-out absolute inset-0"
+                  />
+                )}
               </motion.div>
             ) : (
               <div className="w-full h-full flex items-center justify-center">

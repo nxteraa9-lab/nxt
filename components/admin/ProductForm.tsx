@@ -49,6 +49,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
           category: initialData.category || "all",
           brand: initialData.brand || "NXT",
           mainImage: initialData.mainImage,
+          hoverImage: initialData.hoverImage || "",
           variants: initialData.variants,
           featured: initialData.featured ?? false,
           bestSeller: initialData.bestSeller ?? false,
@@ -63,10 +64,12 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
           price: 0,
           sku: generateSKU(),
           sizeChartType: "tshirt",
+          hoverImage: "",
         },
   });
 
   const watchedMainImage = watch("mainImage");
+  const watchedHoverImage = watch("hoverImage");
   const watchedVariants = watch("variants") || [];
   const watchedSizeChartType = watch("sizeChartType") || "tshirt";
 
@@ -87,6 +90,20 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
       const url = await uploadToCloudinary(file);
       setValue("mainImage", url, { shouldValidate: true });
       toast.success("Primary image uploaded successfully", { id: loadingToast });
+    } catch {
+      toast.error("Failed to upload image", { id: loadingToast });
+    }
+  };
+
+  // Upload hover secondary image to Cloudinary
+  const handleHoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const loadingToast = toast.loading("Uploading hover image...");
+    try {
+      const url = await uploadToCloudinary(file);
+      setValue("hoverImage", url, { shouldValidate: true });
+      toast.success("Hover image uploaded successfully", { id: loadingToast });
     } catch {
       toast.error("Failed to upload image", { id: loadingToast });
     }
@@ -322,6 +339,50 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
             </label>
             <p className="text-[9px] text-zinc-400 font-mono leading-none truncate max-w-md">
               {watchedMainImage || "No cover image uploaded yet"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 2b. Hover Second Image Card (صورة الهوفر الثانية) */}
+      <div className="bg-white rounded-2xl border border-zinc-100 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.015)]">
+        <h2 className="font-black text-xs text-zinc-900 uppercase tracking-widest mb-2">Hover Secondary Image (صورة الهوفر)</h2>
+        <p className="text-[10px] text-zinc-400 font-medium mb-6">
+          الصورة الثانية التي تظهر بسلاسة عند تمرير الماوس فوق كارت المنتج في المتجر (اختياري).
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+          <div className="w-32 h-32 rounded-2xl bg-zinc-50 border border-zinc-100 flex items-center justify-center overflow-hidden p-2 relative">
+            {watchedHoverImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={watchedHoverImage} alt="Hover Preview" className="object-contain w-full h-full" />
+            ) : (
+              <span className="text-[10px] text-zinc-300 font-black">NXT HOVER</span>
+            )}
+          </div>
+          
+          <div className="flex-1 space-y-3">
+            <label className="inline-flex items-center gap-2 bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold text-[10px] hover:bg-amber-700 transition-all cursor-pointer shadow-md shadow-amber-600/10">
+              <Upload size={12} />
+              رفع صورة الهوفر (Hover Image)
+              <input 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                onChange={handleHoverImageUpload}
+              />
+            </label>
+            {watchedHoverImage && (
+              <button
+                type="button"
+                onClick={() => setValue("hoverImage", "", { shouldValidate: true })}
+                className="block text-[10px] text-red-500 hover:underline font-bold"
+              >
+                إزالة صورة الهوفر
+              </button>
+            )}
+            <p className="text-[9px] text-zinc-400 font-mono leading-none truncate max-w-md">
+              {watchedHoverImage || "إذا لم ترفع صورة، سيتم استخدام صورة اللون الثاني تلقائياً عند الهوفر"}
             </p>
           </div>
         </div>
