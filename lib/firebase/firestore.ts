@@ -12,6 +12,9 @@ import {
   orderBy,
   limit,
   Timestamp,
+  onSnapshot,
+  increment,
+  serverTimestamp,
   type QueryConstraint,
 } from "firebase/firestore";
 import { db } from "./config";
@@ -432,3 +435,198 @@ export async function clearAllSystemErrors(): Promise<void> {
   const deletePromises = snapshot.docs.map((docItem) => deleteDoc(docItem.ref));
   await Promise.all(deletePromises);
 }
+
+// ─── 8. تحليلات وزوار الموقع (Visitor Analytics) ──────────────────
+
+export interface VisitorSession {
+  id: string;
+  sessionId: string;
+  visitorId: string;
+  createdAt: any;
+  lastActive: any;
+  dateKey: string;
+  currentPage: string;
+  device: "Mobile" | "Desktop" | "Tablet";
+  browser: string;
+  pageViews: number;
+}
+
+export interface VisitorAnalyticsSummary {
+  liveCount: number;
+  todayCount: number;
+  totalVisitors: number;
+  totalPageViews: number;
+  sessions: VisitorSession[];
+  deviceBreakdown: { mobile: number; desktop: number; tablet: number };
+  browserBreakdown: Record<string, number>;
+  topPages: { path: string; count: number }[];
+  dailyTrend: { date: string; label: string; count: number }[];
+}
+
+export async function trackVisitorSession(data: {
+  sessionId: string;
+  visitorId: string;
+  currentPage: string;
+  device: "Mobile" | "Desktop" | "Tablet";
+  browser: string;
+  isNewPageView?: boolean;
+}): Promise<void> {
+  if (!data.sessionId) return;
+  try {
+    const sessionRef = doc(db, "visitor_sessions", data.sessionId);
+    const existingSnap = await getDoc(sessionRef);
+    const now = new Date();
+    const dateKey = now.toISOString().slice(0, 10);
+
+    if (!existingSnap.exists()) {
+      await setDoc(sessionRef, {
+        sessionId: data.sessionId,
+        visitorId: data.visitorId,
+        createdAt: serverTimestamp(),
+        lastActive: serverTimestamp(),
+        dateKey,
+        currentPage: data.currentPage || "/",
+        device: data.device || "Desktop",
+        browser: data.browser || "Unknown",
+        pageViews: 1,
+      });
+    } else {
+      const updateData: Record<string, any> = {
+        lastActive: serverTimestamp(),
+        currentPage: data.currentPage || "/",
+        device: data.device || "Desktop",
+        browser: data.browser || "Unknown",
+      };
+      if (data.isNewPageView) {
+        updateData.pageViews = increment(1);
+      }
+      await updateDoc(sessionRef, updateData);
+    }
+  } catch (err) {
+    // Silent catch for analytics so user experience is never blocked
+    console.error("Error tracking visitor session:", err);
+  }
+}
+
+export function subscribeToVisitorSessions(
+  callback: (summary: VisitorAnalyticsSummary) => void
+): () => void {
+  const q = query(collection(db, "visitor_sessions"), orderBy("lastActive", "desc"), limit(200));
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const nowMs = Date.now();
+      const liveWindowMs = 5 * 60 * 1000; // 5 minutes active window
+      const todayStr = new Date().toISOString().slice(0, 10);
+
+      const sessions: VisitorSession[] = snapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          sessionId: data.sessionId || docSnap.id,
+          visitorId: data.visitorId || "Unknown",
+          createdAt: data.createdAt,
+          lastActive: data.lastActive,
+          dateKey: data.dateKey || todayStr,
+          currentPage: data.currentPage || "/",
+          device: data.device || "Desktop",
+          browser: data.browser || "Unknown",
+          pageViews: data.pageViews || 1,
+        };
+      });
+
+      let liveCount = 0;
+      let todayCount = 0;
+      let totalPageViews = 0;
+      const deviceCount = { mobile: 0, desktop: 0, tablet: 0 };
+      const browserCount: Record<string, number> = {};
+      const pageCountMap: Record<string, number> = {};
+      const dailyCountMap: Record<string, number> = {};
+
+      // Initialize past 7 days in daily map
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const k = d.toISOString().slice(0, 10);
+        dailyCountMap[k] = 0;
+      }
+
+      sessions.forEach((s) => {
+        // Calculate last active timestamp ms
+        let lastActiveMs = 0;
+        if (s.lastActive?.toMillis) {
+          lastActiveMs = s.lastActive.toMillis();
+        } else if (s.lastActive?.seconds) {
+          lastActiveMs = s.lastActive.seconds * 1000;
+        } else if (s.lastActive instanceof Date) {
+          lastActiveMs = s.lastActive.getTime();
+        }
+
+        // Live status check (within last 5 mins)
+        if (nowMs - lastActiveMs <= liveWindowMs && lastActiveMs > 0) {
+          liveCount++;
+        }
+
+        // Today's visitor check
+        if (s.dateKey === todayStr) {
+          todayCount++;
+        }
+
+        totalPageViews += s.pageViews || 1;
+
+        // Device breakdown
+        const devKey = (s.device || "Desktop").toLowerCase();
+        if (devKey.includes("mobile")) deviceCount.mobile++;
+        else if (devKey.includes("tablet")) deviceCount.tablet++;
+        else deviceCount.desktop++;
+
+        // Browser breakdown
+        const bName = s.browser || "أخرى";
+        browserCount[bName] = (browserCount[bName] || 0) + 1;
+
+        // Top pages
+        const path = s.currentPage || "/";
+        pageCountMap[path] = (pageCountMap[path] || 0) + 1;
+
+        // Daily trend
+        if (dailyCountMap[s.dateKey] !== undefined) {
+          dailyCountMap[s.dateKey]++;
+        } else {
+          dailyCountMap[s.dateKey] = 1;
+        }
+      });
+
+      const topPages = Object.entries(pageCountMap)
+        .map(([path, count]) => ({ path, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8);
+
+      const dailyTrend = Object.entries(dailyCountMap)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([date, count]) => {
+          const dObj = new Date(date);
+          const label = isNaN(dObj.getTime())
+            ? date
+            : dObj.toLocaleDateString("ar-EG", { weekday: "short", day: "numeric", month: "numeric" });
+          return { date, label, count };
+        });
+
+      callback({
+        liveCount,
+        todayCount,
+        totalVisitors: sessions.length,
+        totalPageViews,
+        sessions,
+        deviceBreakdown: deviceCount,
+        browserBreakdown: browserCount,
+        topPages,
+        dailyTrend,
+      });
+    },
+    (err) => {
+      console.error("Error subscribing to visitor sessions:", err);
+    }
+  );
+}
+

@@ -11,9 +11,9 @@ import {
   Clock,
   ChevronRight,
   Plus,
+  Activity,
 } from "lucide-react";
-import { getOrders } from "@/lib/firebase/firestore";
-import { getProducts } from "@/lib/firebase/firestore";
+import { getOrders, getProducts, subscribeToVisitorSessions } from "@/lib/firebase/firestore";
 import { formatPrice, formatDate } from "@/lib/utils";
 import type { Order } from "@/types/order";
 import { Spinner } from "@/components/ui/Spinner";
@@ -36,9 +36,14 @@ const statusDots: Record<string, string> = {
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [liveVisitors, setLiveVisitors] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const unsubVisitors = subscribeToVisitorSessions((summary) => {
+      setLiveVisitors(summary.liveCount);
+    });
+
     Promise.all([getOrders(), getProducts()])
       .then(([orders, products]) => {
         const totalRevenue = orders
@@ -55,6 +60,8 @@ export default function AdminDashboardPage() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
+
+    return () => unsubVisitors();
   }, []);
 
   const statCards = [
@@ -112,6 +119,13 @@ export default function AdminDashboardPage() {
           </p>
         </div>
         <div className="flex gap-3">
+          <Link
+            href="/admin/analytics"
+            className="inline-flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-xl font-bold text-xs hover:bg-emerald-700 transition-all duration-300 shadow-md shadow-emerald-600/20"
+          >
+            <Activity size={14} className="animate-pulse" />
+            <span>التحليلات والزوار ({liveVisitors} متواجد الآن)</span>
+          </Link>
           <Link
             href="/admin/products"
             className="inline-flex items-center gap-2 bg-zinc-900 text-white px-5 py-3 rounded-xl font-bold text-xs hover:bg-zinc-800 transition-all duration-300 shadow-md shadow-zinc-900/10"

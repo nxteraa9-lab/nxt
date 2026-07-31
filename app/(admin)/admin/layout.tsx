@@ -19,6 +19,7 @@ import {
   Truck,
   Menu,
   X,
+  Activity,
 } from "lucide-react";
 import { signOut } from "@/lib/firebase/auth";
 import { toast } from "sonner";
@@ -27,6 +28,7 @@ import { Spinner } from "@/components/ui/Spinner";
 
 const navItems = [
   { href: "/admin", label: "لوحة التحكم", icon: LayoutDashboard },
+  { href: "/admin/analytics", label: "التحليلات والزوار", icon: Activity },
   { href: "/admin/orders", label: "الطلبات", icon: ShoppingCart },
   { href: "/admin/shipping", label: "أسعار الشحن", icon: Truck },
   { href: "/admin/products", label: "المنتجات", icon: Package },
