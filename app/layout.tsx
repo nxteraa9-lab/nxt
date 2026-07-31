@@ -9,7 +9,7 @@ import { WishlistProvider } from "@/features/wishlist/WishlistProvider";
 import { ErrorTrackerProvider } from "@/components/admin/ErrorTrackerProvider";
 import { Toaster } from "sonner";
 
-const gaId = process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "";
+const gaId = process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-H2HP3BGKNW";
 
 const outfit = Outfit({
   subsets: ["latin"],

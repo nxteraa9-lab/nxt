@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { trackVisitorSession } from "@/lib/firebase/firestore";
+import * as gtag from "@/lib/analytics/gtag";
 
 function getOrGenerateId(key: string, prefix: string, storage: Storage): string {
   try {
@@ -115,6 +116,10 @@ export function VisitorTracker() {
           browser,
           isNewPageView: isNew,
         });
+        // Send GA4 Google Analytics Pageview
+        if (isNew) {
+          gtag.pageview(window.location.pathname || "/");
+        }
       } catch (err) {
         console.error("Visitor tracking error:", err);
       }
