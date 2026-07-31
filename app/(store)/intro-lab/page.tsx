@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, ArrowLeft } from "lucide-react";
+import { Play, ArrowLeft, Zap } from "lucide-react";
 import Link from "next/link";
 import { NXTCleanIntro } from "@/components/intros/NXTCleanIntro";
 
@@ -24,11 +24,12 @@ export default function IntroLabPage() {
         className="text-center space-y-6 max-w-sm border border-zinc-800 bg-zinc-950 p-8 rounded-3xl shadow-2xl"
       >
         <div className="flex flex-col items-center justify-center gap-2 mb-2">
+          <Zap className="w-8 h-8 text-white animate-bounce" />
           <span className="text-5xl font-black tracking-[0.25em] text-white">NXT</span>
         </div>
 
         <p className="text-zinc-400 text-xs leading-relaxed">
-          معاينة انترو كلمة NXT فقط باللون الأبيض الفاخر، مع لمعة ضوئية تحرك من اليمين إلى اليسار وخلفية سوداء.
+          معاينة انترو كلمة NXT السريع والفاخر بمؤثرات إضاءة وانوار ليزر شيعاعية (انميشن سريع ومبهر من اليمين إلى اليسار).
         </p>
 
         <button
@@ -36,7 +37,7 @@ export default function IntroLabPage() {
           className="inline-flex items-center justify-center gap-2 bg-white text-black font-extrabold text-sm px-8 py-3.5 rounded-2xl hover:bg-zinc-200 transition-all active:scale-95 cursor-pointer w-full"
         >
           <Play size={16} fill="black" />
-          معاينة انترو NXT الآن
+          معاينة انترو NXT السريع الان
         </button>
 
         <div className="flex items-center justify-center pt-2 border-t border-zinc-800">
