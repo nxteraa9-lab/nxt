@@ -34,14 +34,58 @@ function detectDevice(): "Mobile" | "Desktop" | "Tablet" {
 }
 
 function detectBrowser(): string {
-  if (typeof window === "undefined" || !navigator) return "Unknown";
-  const ua = navigator.userAgent;
-  if (ua.includes("Firefox/")) return "Firefox";
-  if (ua.includes("Edg/")) return "Edge";
+  if (typeof window === "undefined" || !navigator) return "غير معروف";
+  const ua = navigator.userAgent || "";
+  const vendor = navigator.vendor || "";
+
+  // 1. In-App Browsers (تطبيقات التواصل الاجتماعي)
+  if (ua.includes("Instagram")) return "Instagram";
+  if (ua.includes("TikTok") || ua.includes("ByteLocale")) return "TikTok";
+  if (ua.includes("FBAN") || ua.includes("FBAV")) return "Facebook";
+  if (ua.includes("Snapchat")) return "Snapchat";
+  if (ua.includes("Telegram")) return "Telegram";
+  if (ua.includes("WhatsApp")) return "WhatsApp";
+  if (ua.includes("Line/")) return "Line";
+  if (ua.includes("Twitter")) return "Twitter / X";
+
+  // 2. Specialized & Brand Mobile/Desktop Browsers
+  if ((navigator as any).brave !== undefined || ua.includes("Brave")) return "Brave";
+  if (ua.includes("SamsungBrowser")) return "Samsung Internet";
+  if (ua.includes("UCBrowser") || ua.includes("UCWEB")) return "UC Browser";
+  if (ua.includes("YaBrowser")) return "Yandex Browser";
+  if (ua.includes("Vivaldi")) return "Vivaldi";
+  if (ua.includes("Arc/")) return "Arc Browser";
+  if (ua.includes("DuckDuckGo") || ua.includes("ddg_android")) return "DuckDuckGo";
+  if (ua.includes("MiuiBrowser")) return "Xiaomi Miui";
+  if (ua.includes("HuaweiBrowser") || ua.includes("HB/")) return "Huawei Browser";
+  if (ua.includes("VivoBrowser")) return "Vivo Browser";
+  if (ua.includes("HeyTapBrowser") || ua.includes("OppoBrowser")) return "OPPO Browser";
+  if (ua.includes("Kiwi")) return "Kiwi Browser";
+  if (ua.includes("Puffin")) return "Puffin";
+  if (ua.includes("Aloha")) return "Aloha Browser";
+  if (ua.includes("Silk/")) return "Amazon Silk";
+  if (ua.includes("TorBrowser") || ua.includes("Tor/")) return "Tor Browser";
+  if (ua.includes("QQBrowser") || ua.includes("MQQBrowser")) return "QQ Browser";
+  if (ua.includes("Baidu") || ua.includes("baidubrowser")) return "Baidu";
+  if (ua.includes("Sogou") || ua.includes("SE/")) return "Sogou";
+  if (ua.includes("Maxthon")) return "Maxthon";
+
+  // 3. Alternative Desktop Browsers
+  if (ua.includes("Waterfox")) return "Waterfox";
+  if (ua.includes("PaleMoon")) return "Pale Moon";
+  if (ua.includes("SeaMonkey")) return "SeaMonkey";
+
+  // 4. Major Global Browsers
+  if (ua.includes("Edg/") || ua.includes("EdgA/") || ua.includes("EdgiOS/")) return "Edge";
+  if (ua.includes("OPR/") || ua.includes("Opera") || ua.includes("OPT/") || ua.includes("OPiOS/")) return "Opera";
+  if (ua.includes("Firefox/") || ua.includes("FxiOS/")) return "Firefox";
+  if (ua.includes("CriOS/")) return "Chrome (iOS)";
+  if (ua.includes("Chrome/") && vendor.includes("Google")) return "Chrome";
+  if (ua.includes("Safari/") && (vendor.includes("Apple") || ua.includes("Version/"))) return "Safari";
   if (ua.includes("Chrome/")) return "Chrome";
   if (ua.includes("Safari/")) return "Safari";
-  if (ua.includes("OPR/") || ua.includes("Opera/")) return "Opera";
-  return "أخرى";
+
+  return "متصفح آخر";
 }
 
 export function VisitorTracker() {
