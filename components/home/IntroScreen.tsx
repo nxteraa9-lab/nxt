@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { EtmamCleanIntro } from "@/components/intros/EtmamCleanIntro";
+import { NXTCleanIntro } from "@/components/intros/NXTCleanIntro";
 
 export function IntroScreen({ onComplete }: { onComplete?: () => void }) {
   const [showIntro, setShowIntro] = useState(true);
@@ -15,5 +15,5 @@ export function IntroScreen({ onComplete }: { onComplete?: () => void }) {
 
   if (!showIntro) return null;
 
-  return <EtmamCleanIntro onComplete={handleComplete} />;
+  return <NXTCleanIntro onComplete={handleComplete} />;
 }

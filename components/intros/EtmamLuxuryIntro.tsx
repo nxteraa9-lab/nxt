@@ -1,1 +1,1 @@
-export { EtmamCleanIntro as EtmamLuxuryIntro } from "./EtmamCleanIntro";
+export { NXTCleanIntro as EtmamLuxuryIntro } from "./NXTCleanIntro";

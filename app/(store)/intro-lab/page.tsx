@@ -4,15 +4,15 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Play, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { EtmamCleanIntro } from "@/components/intros/EtmamCleanIntro";
+import { NXTCleanIntro } from "@/components/intros/NXTCleanIntro";
 
 export default function IntroLabPage() {
   const [playing, setPlaying] = useState(false);
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-8 font-sans dir-rtl">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-8 font-sans">
       {playing && (
-        <EtmamCleanIntro
+        <NXTCleanIntro
           onComplete={() => setPlaying(false)}
         />
       )}
@@ -24,12 +24,12 @@ export default function IntroLabPage() {
         className="text-center space-y-6 max-w-sm border border-zinc-800 bg-zinc-950 p-8 rounded-3xl shadow-2xl"
       >
         <div className="flex flex-col items-center justify-center gap-2 mb-2">
-          <span className="text-4xl font-black text-white">إتمام</span>
-          <span className="text-xs font-bold tracking-[0.4em] text-zinc-400 uppercase">ETMAM</span>
+          <span className="text-4xl font-black tracking-[0.2em] text-white">NXT ERA</span>
+          <span className="text-xs font-bold tracking-[0.4em] text-zinc-400 uppercase">THE FUTURE OF FASHION</span>
         </div>
 
         <p className="text-zinc-400 text-xs leading-relaxed">
-          معاينة الانترو الفاخر البسيط (كلمة إتمام باللون الأبيض، خلفية سوداء، حركة سريعة وسلسة من اليمين إلى اليسار).
+          معاينة انترو NXT الفاخر البسيط (نص NXT ERA باللون الأبيض، خلفية سوداء، حركة من اليمين إلى اليسار).
         </p>
 
         <button
@@ -37,7 +37,7 @@ export default function IntroLabPage() {
           className="inline-flex items-center justify-center gap-2 bg-white text-black font-extrabold text-sm px-8 py-3.5 rounded-2xl hover:bg-zinc-200 transition-all active:scale-95 cursor-pointer w-full"
         >
           <Play size={16} fill="black" />
-          معاينة انترو إتمام الآن
+          معاينة انترو NXT ERA الآن
         </button>
 
         <div className="flex items-center justify-center pt-2 border-t border-zinc-800">
