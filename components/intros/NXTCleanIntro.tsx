@@ -16,13 +16,13 @@ export function NXTCleanIntro({ onComplete }: NXTCleanIntroProps) {
   }, [onComplete]);
 
   useEffect(() => {
-    // Total duration ~3.2 seconds
+    // Total duration: faster ~2.0 seconds
     const timer = setTimeout(() => {
       setShow(false);
       setTimeout(() => {
         onCompleteRef.current();
-      }, 500);
-    }, 3200);
+      }, 400);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -31,7 +31,7 @@ export function NXTCleanIntro({ onComplete }: NXTCleanIntroProps) {
     setShow(false);
     setTimeout(() => {
       onCompleteRef.current();
-    }, 300);
+    }, 200);
   };
 
   return (
@@ -44,18 +44,18 @@ export function NXTCleanIntro({ onComplete }: NXTCleanIntroProps) {
           initial={{ opacity: 1 }}
           exit={{
             opacity: 0,
-            filter: "blur(10px)",
-            transition: { duration: 0.6, ease: [0.77, 0, 0.175, 1] },
+            filter: "blur(8px)",
+            transition: { duration: 0.4, ease: [0.77, 0, 0.175, 1] },
           }}
         >
           {/* Main Container */}
           <div className="relative flex items-center justify-center px-8 py-12 overflow-hidden">
-            {/* Sliding Entry: Right to Left */}
+            {/* Sliding Entry: Right to Left (Faster 0.7s) */}
             <motion.div
-              initial={{ x: 160, opacity: 0, filter: "blur(14px)" }}
+              initial={{ x: 160, opacity: 0, filter: "blur(12px)" }}
               animate={{ x: 0, opacity: 1, filter: "blur(0px)" }}
               transition={{
-                duration: 1.1,
+                duration: 0.7,
                 ease: [0.16, 1, 0.3, 1],
               }}
               className="relative flex items-center justify-center"
@@ -65,17 +65,17 @@ export function NXTCleanIntro({ onComplete }: NXTCleanIntroProps) {
                 NXT
               </h1>
 
-              {/* Shimmer Light Beam Effect Moving across the word from Right to Left */}
+              {/* Shimmer Light Beam Effect Moving across the word from Right to Left (Faster 1.4s) */}
               <motion.div
                 className="absolute inset-0 pointer-events-none z-20 bg-gradient-to-l from-transparent via-white to-transparent mix-blend-overlay opacity-90"
                 initial={{ x: "120%" }}
                 animate={{ x: "-120%" }}
                 transition={{
-                  duration: 2.2,
-                  delay: 0.4,
+                  duration: 1.4,
+                  delay: 0.2,
                   ease: "easeInOut",
                   repeat: Infinity,
-                  repeatDelay: 0.5,
+                  repeatDelay: 0.3,
                 }}
               />
 
@@ -88,8 +88,8 @@ export function NXTCleanIntro({ onComplete }: NXTCleanIntroProps) {
                   opacity: [0, 1, 1, 0],
                 }}
                 transition={{
-                  duration: 1.8,
-                  delay: 0.5,
+                  duration: 1.2,
+                  delay: 0.25,
                   ease: "easeInOut",
                 }}
               />
@@ -102,7 +102,7 @@ export function NXTCleanIntro({ onComplete }: NXTCleanIntroProps) {
               className="h-full bg-white shadow-[0_0_12px_white]"
               initial={{ scaleX: 0, originX: 1 }}
               animate={{ scaleX: 1 }}
-              transition={{ duration: 3.2, ease: "linear" }}
+              transition={{ duration: 2.0, ease: "linear" }}
             />
           </div>
         </motion.div>
