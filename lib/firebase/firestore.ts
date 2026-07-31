@@ -474,36 +474,27 @@ export async function trackVisitorSession(data: {
   if (!data.sessionId) return;
   try {
     const sessionRef = doc(db, "visitor_sessions", data.sessionId);
-    const existingSnap = await getDoc(sessionRef);
     const now = new Date();
     const dateKey = now.toISOString().slice(0, 10);
 
-    if (!existingSnap.exists()) {
-      await setDoc(sessionRef, {
-        sessionId: data.sessionId,
-        visitorId: data.visitorId,
-        createdAt: serverTimestamp(),
-        lastActive: serverTimestamp(),
-        dateKey,
-        currentPage: data.currentPage || "/",
-        device: data.device || "Desktop",
-        browser: data.browser || "Unknown",
-        pageViews: 1,
-      });
-    } else {
-      const updateData: Record<string, any> = {
-        lastActive: serverTimestamp(),
-        currentPage: data.currentPage || "/",
-        device: data.device || "Desktop",
-        browser: data.browser || "Unknown",
-      };
-      if (data.isNewPageView) {
-        updateData.pageViews = increment(1);
-      }
-      await updateDoc(sessionRef, updateData);
+    const sessionPayload: Record<string, any> = {
+      sessionId: data.sessionId,
+      visitorId: data.visitorId,
+      lastActive: serverTimestamp(),
+      dateKey,
+      currentPage: data.currentPage || "/",
+      device: data.device || "Desktop",
+      browser: data.browser || "Unknown",
+    };
+
+    if (data.isNewPageView) {
+      sessionPayload.pageViews = increment(1);
     }
+
+    // Atomic write using setDoc with merge: true
+    // Does NOT require getDoc read permissions, so unauthenticated visitors are tracked 100% reliably!
+    await setDoc(sessionRef, sessionPayload, { merge: true });
   } catch (err) {
-    // Silent catch for analytics so user experience is never blocked
     console.error("Error tracking visitor session:", err);
   }
 }

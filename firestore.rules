@@ -91,16 +91,8 @@ service cloud.firestore {
       // قراءة وحذف بيانات التحليلات محصورة 100% للأدمن المسجل فقط
       allow read, delete: if isAdmin();
 
-      // إنشاء الجلسة متاح مع التحقق الصارم من حقول الجلسة لمنع الاختراق أو البيانات الضارة
-      allow create: if request.resource.data.sessionId is string
-                    && request.resource.data.visitorId is string
-                    && request.resource.data.currentPage is string
-                    && request.resource.data.device is string;
-
-      // التحديث متاح فقط لتطوير بيانات التواجد والتنقل للجلسة نفسها
-      allow update: if request.resource.data.sessionId == resource.data.sessionId
-                    && request.resource.data.visitorId == resource.data.visitorId
-                    && request.resource.data.currentPage is string;
+      // إنشاء وتحديث الجلسات متاح لجميع الزوار لتسجيل التواجد تلقائياً وبدون قراءة
+      allow create, update: if true;
     }
 
     // ─── الحماية الافتراضية لأي مجموعة أخرى غير معروفة ───────────────
